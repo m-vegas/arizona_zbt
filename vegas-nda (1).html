@@ -1,0 +1,858 @@
+<title>Vegas+ | NDA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+/* Layout: проверка безопасности, затем герой с карточкой документа, лента, читалка NDA (оглавление слева, страницы справа), финальная страница с подписью и экраны подписания. */
+:root {
+  --bg: #0d0b14;
+  --surface: #161322;
+  --surface-2: #1e1a2e;
+  --line: #2b2640;
+  --fg: #f3effc;
+  --muted: #a49cbd;
+  --accent: #ff4f8b;
+  --accent-ink: #1a0610;
+  --gold: #ffc857;
+  --ok: #4ee3a0;
+  --err: #ff7a7a;
+  --glow-a: rgba(255, 79, 139, 0.22);
+  --glow-b: rgba(255, 200, 87, 0.12);
+
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-sign: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #faf7fd;
+    --surface: #ffffff;
+    --surface-2: #f2edf9;
+    --line: #e3dbf0;
+    --fg: #1b1530;
+    --muted: #675f80;
+    --accent: #d6246b;
+    --accent-ink: #ffffff;
+    --gold: #a86b00;
+    --ok: #0f9d62;
+    --err: #c92a2a;
+    --glow-a: rgba(214, 36, 107, 0.12);
+    --glow-b: rgba(255, 200, 87, 0.22);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #faf7fd;
+  --surface: #ffffff;
+  --surface-2: #f2edf9;
+  --line: #e3dbf0;
+  --fg: #1b1530;
+  --muted: #675f80;
+  --accent: #d6246b;
+  --accent-ink: #ffffff;
+  --gold: #a86b00;
+  --ok: #0f9d62;
+  --err: #c92a2a;
+  --glow-a: rgba(214, 36, 107, 0.12);
+  --glow-b: rgba(255, 200, 87, 0.22);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html.lock { overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 34rem at 85% -8%, var(--glow-a), transparent 60%),
+    radial-gradient(48rem 30rem at 0% 30%, var(--glow-b), transparent 60%);
+}
+a { color: inherit; }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.08; }
+p { margin: 0; }
+
+/* top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 22px; flex-wrap: wrap; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: 20px; text-decoration: none; letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 8px; }
+.logo i { font-style: normal; color: var(--accent); }
+.logo small { font-family: var(--f-mono); font-weight: 500; font-size: 11px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 13px 22px; border-radius: 12px; text-decoration: none; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; transition: transform .2s, border-color .2s, background .2s, box-shadow .2s; }
+.btn:hover { transform: translateY(-2px); border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; box-shadow: 0 10px 30px -10px var(--accent); }
+.btn.primary:hover { border-color: transparent; box-shadow: 0 14px 38px -8px var(--accent); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-sm { padding: 9px 16px; font-size: 14px; border-radius: 999px; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; padding-block: clamp(28px, 6vw, 72px) clamp(40px, 6vw, 72px); }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: 13px; color: var(--gold); letter-spacing: 0.04em; text-transform: uppercase; }
+.eyebrow::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--glow-a), 0 0 14px var(--accent); }
+.hero h1 { font-size: clamp(32px, 5.8vw, 60px); font-weight: 800; letter-spacing: -0.035em; margin-block: 18px 20px; }
+.hero h1 em { font-style: normal; color: var(--accent); text-shadow: 0 0 28px var(--glow-a); }
+.lead { color: var(--muted); font-size: clamp(16px, 2vw, 18px); max-width: 54ch; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+.chipline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.pill { font-size: 13px; font-weight: 600; color: var(--muted); padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.pill b { color: var(--gold); font-weight: 700; }
+
+/* document visual */
+.docv { position: relative; width: 100%; max-width: 440px; margin-inline: auto; border-radius: 26px; padding: 26px; display: grid; gap: 20px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 20%, var(--surface)) 0%, var(--surface) 55%, color-mix(in srgb, var(--gold) 12%, var(--surface)) 100%); box-shadow: 0 40px 90px -35px var(--accent); transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .18s ease-out; }
+.docv::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .14) 50%, transparent 65%); transform: translateX(-130%); animation: sheen 5.5s ease-in-out infinite; }
+@keyframes sheen { 55%, 100% { transform: translateX(130%); } }
+.docv-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.docv-brand { font-family: var(--f-display); font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+.docv-brand i { font-style: normal; color: var(--accent); }
+.docv-tag { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; padding: 5px 10px; border-radius: 6px; background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
+.docv h2 { font-size: clamp(20px, 3.6vw, 26px); font-weight: 800; letter-spacing: -0.03em; }
+.lines { display: grid; gap: 9px; }
+.lines i { display: block; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--fg) 14%, transparent); }
+.lines i:nth-child(1) { width: 100%; } .lines i:nth-child(2) { width: 92%; } .lines i:nth-child(3) { width: 97%; } .lines i:nth-child(4) { width: 64%; }
+.lines i:nth-child(5) { width: 100%; margin-top: 8px; } .lines i:nth-child(6) { width: 86%; }
+.sigzone { border-top: 1px dashed color-mix(in srgb, var(--fg) 30%, transparent); padding-top: 10px; }
+.sigzone small { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sigzone svg { display: block; width: 100%; height: 64px; margin-top: 4px; }
+.sigzone path { fill: none; stroke: var(--gold); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 520; stroke-dashoffset: 520; animation: scribble 4.8s ease-in-out infinite; filter: drop-shadow(0 0 6px var(--gold)); }
+@keyframes scribble { 0% { stroke-dashoffset: 520; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -520; } }
+
+/* ticker */
+.ticker { border-block: 1px solid var(--line); overflow: hidden; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-block: 16px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.ticker-track { display: flex; width: max-content; gap: 44px; animation: slide 40s linear infinite; font-family: var(--f-display); font-weight: 700; font-size: clamp(16px, 2.4vw, 22px); letter-spacing: -0.01em; white-space: nowrap; }
+.ticker-track span { display: inline-flex; align-items: center; gap: 44px; }
+.ticker-track span::after { content: "✦"; color: var(--accent); font-size: .7em; }
+.ticker-track span:nth-child(even) { color: var(--gold); }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+/* sections */
+section { padding-block: clamp(56px, 8vw, 104px) 0; }
+.sec-head { display: grid; gap: 12px; margin-bottom: 32px; }
+.sec-head h2 { font-size: clamp(26px, 4.4vw, 44px); font-weight: 800; letter-spacing: -0.03em; }
+.sec-head p { color: var(--muted); max-width: 62ch; }
+.tag { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); }
+
+/* reader */
+.reader { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 22px; align-items: start; }
+.toc { position: sticky; top: 16px; list-style: none; margin: 0; padding: 12px; display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; }
+.toc button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid transparent; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; cursor: pointer; transition: background .2s, color .2s; }
+.toc button:hover:not(:disabled) { color: var(--fg); background: var(--surface-2); }
+.toc .n { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); transition: all .25s; }
+.toc button[aria-current="step"] { color: var(--fg); background: var(--surface-2); border-color: var(--line); }
+.toc button[aria-current="step"] .n { background: var(--accent); border-color: transparent; color: var(--accent-ink); box-shadow: 0 0 14px var(--glow-a); }
+.toc button.done .n { background: var(--ok); border-color: transparent; color: var(--bg); }
+.toc button:disabled { opacity: .45; cursor: not-allowed; }
+
+.rd { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; overflow: hidden; min-width: 0; position: relative; }
+.rd.thump { animation: thump .5s .25s ease-out; }
+@keyframes thump { 30% { transform: translateY(5px) scale(.992); } 60% { transform: translateY(-2px); } }
+.rd-view { display: none; }
+.rd[data-state="read"] .v-read,
+.rd[data-state="signing"] .v-signing,
+.rd[data-state="signed"] .v-signed,
+.rd[data-state="error"] .v-error { display: block; }
+.rd-head { display: flex; justify-content: space-between; gap: 12px; padding: 16px 22px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; flex-wrap: wrap; }
+.rd-head b { color: var(--fg); font-weight: 500; }
+.rd-prog { height: 3px; background: var(--surface-2); }
+.rd-prog i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--gold)); box-shadow: 0 0 10px var(--accent); transition: width .5s ease; }
+.rd-body { max-height: min(60vh, 500px); overflow-y: auto; padding: 26px 24px 30px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.rd-body.free { max-height: none; overflow: visible; }
+.pg h3 { font-size: clamp(20px, 3.4vw, 26px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; }
+.plain { display: grid; gap: 4px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--gold) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--line)); margin-bottom: 18px; }
+.plain span { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.plain p { font-size: 14.5px; }
+.cl { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 4px; padding-block: 12px; border-top: 1px solid var(--line); }
+.cl b { font-family: var(--f-mono); font-weight: 500; font-size: 13px; color: var(--accent); padding-top: 2px; }
+.cl p, .cl li { font-size: 15px; line-height: 1.65; }
+.cl ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.cl li::marker { color: var(--accent); }
+.rd-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 22px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 45%, transparent); flex-wrap: wrap; }
+.hint { font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; }
+.hint .arr { display: inline-block; animation: bob 1.2s ease-in-out infinite; color: var(--accent); }
+@keyframes bob { 50% { transform: translateY(4px); } }
+.hint.ok { color: var(--ok); }
+.hint.ok .arr { animation: none; color: var(--ok); }
+.nav2 { display: flex; gap: 10px; }
+
+/* sign page */
+.sign-intro { color: var(--muted); font-size: 14.5px; margin-bottom: 18px; }
+form { display: grid; gap: 14px; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.fld { display: grid; gap: 6px; min-width: 0; }
+.fld label.lb { font-size: 13px; font-weight: 700; color: var(--muted); }
+.fld label.lb i { font-style: normal; color: var(--accent); }
+.fld input[type="text"], .fld input[type="email"] { width: 100%; font-family: var(--f-body); font-size: 15px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; transition: border-color .2s, box-shadow .2s; }
+.fld input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--glow-a); }
+.fld.bad input[type="text"], .fld.bad input[type="email"] { border-color: var(--err); }
+.msg { display: none; color: var(--err); font-size: 12.5px; font-weight: 600; }
+.fld.bad .msg { display: block; }
+.chk { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.chk input { appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px; margin: 1px 0 0; border: 2px solid var(--muted); border-radius: 7px; background: var(--bg); display: grid; place-items: center; cursor: pointer; transition: all .2s; }
+.chk input:checked { background: var(--accent); border-color: var(--accent); }
+.chk input:checked::after { content: "✓"; color: var(--accent-ink); font-size: 14px; font-weight: 800; line-height: 1; }
+.fld.bad .chk input { border-color: var(--err); }
+.sigbox { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px 18px 6px; }
+.sigbox small { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sigtxt { font-family: var(--f-sign); font-weight: 600; font-size: clamp(36px, 7vw, 48px); line-height: 1.2; min-height: 62px; color: var(--gold); border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+.sigtxt.ph { color: color-mix(in srgb, var(--muted) 55%, transparent); }
+.sigmeta { display: flex; justify-content: space-between; gap: 10px; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); padding-block: 8px 4px; flex-wrap: wrap; }
+.demo { display: none; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--gold); padding: 8px 12px; border-radius: 10px; border: 1px dashed color-mix(in srgb, var(--gold) 50%, var(--line)); }
+.demo.on { display: flex; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.submit { width: 100%; padding: 15px 22px; font-size: 16px; position: relative; overflow: hidden; }
+.submit::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .35) 50%, transparent 70%); transform: translateX(-120%); animation: shine 3.2s ease-in-out infinite; }
+@keyframes shine { 55%, 100% { transform: translateX(120%); } }
+.fine { color: var(--muted); font-size: 12.5px; text-align: center; }
+
+/* signing / signed / error */
+.v-signing, .v-signed, .v-error { text-align: center; padding: clamp(28px, 5vw, 48px) clamp(20px, 4vw, 40px); }
+.sg-card { background: var(--bg); border: 1px solid var(--line); border-radius: 18px; padding: 22px 22px 14px; max-width: 420px; margin: 0 auto 26px; text-align: left; position: relative; overflow: hidden; }
+.sg-card small { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sg-name { font-family: var(--f-sign); font-weight: 600; font-size: clamp(40px, 8vw, 54px); line-height: 1.25; color: var(--gold); text-shadow: 0 0 18px color-mix(in srgb, var(--gold) 40%, transparent); clip-path: inset(0 100% 0 0); overflow-wrap: anywhere; }
+.rd[data-state="signing"] .sg-name { animation: write 2.1s .2s cubic-bezier(.5, 0, .3, 1) forwards; }
+@keyframes write { to { clip-path: inset(0 0 0 0); } }
+.sg-line { display: block; width: 100%; height: 14px; }
+.sg-line path { fill: none; stroke: var(--line); stroke-width: 2; stroke-linecap: round; }
+.pen { position: absolute; top: 40px; left: 22px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px 4px var(--accent); opacity: 0; }
+.rd[data-state="signing"] .pen { animation: penmove 2.1s .2s cubic-bezier(.5, 0, .3, 1) forwards; }
+@keyframes penmove { 0% { opacity: 1; left: 22px; } 92% { opacity: 1; } 100% { opacity: 0; left: calc(100% - 32px); } }
+.v-signing h2, .v-signed h2, .v-error h2 { font-size: clamp(22px, 4.4vw, 28px); font-weight: 800; letter-spacing: -0.03em; }
+.bar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin: 22px auto 18px; max-width: 360px; }
+.bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--gold)); box-shadow: 0 0 14px var(--accent); transition: width 2.3s cubic-bezier(.3, .6, .3, 1); }
+.bar.full i { width: 100% !important; transition-duration: .35s; }
+.steplist { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 8px; max-width: 320px; text-align: left; font-size: 14.5px; }
+.steplist li { display: flex; align-items: center; gap: 10px; color: var(--muted); opacity: .45; transition: opacity .3s, color .3s; }
+.steplist li::before { content: ""; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); transition: all .3s; }
+.steplist li.on { opacity: 1; color: var(--fg); }
+.steplist li.on::before { border-color: var(--accent); border-top-color: transparent; animation: spin .7s linear infinite; }
+.steplist li.ok { opacity: 1; color: var(--fg); }
+.steplist li.ok::before { border-color: var(--ok); background: var(--ok); animation: none; box-shadow: 0 0 10px var(--ok); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.v-signed { position: relative; }
+.stamp { width: 176px; height: 176px; margin: 0 auto 24px; border-radius: 50%; border: 4px double var(--ok); color: var(--ok); display: grid; place-content: center; gap: 2px; text-align: center; transform: rotate(-12deg); background: color-mix(in srgb, var(--ok) 8%, transparent); box-shadow: 0 0 40px -6px color-mix(in srgb, var(--ok) 55%, transparent), inset 0 0 24px -8px var(--ok); }
+.stamp b { font-family: var(--f-display); font-weight: 800; font-size: 40px; letter-spacing: -0.04em; line-height: 1; }
+.stamp span { font-family: var(--f-mono); font-size: 12px; letter-spacing: .22em; text-transform: uppercase; }
+.stamp small { font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; opacity: .85; }
+.rd[data-state="signed"] .stamp { animation: stampin .75s cubic-bezier(.2, 1.3, .4, 1) both; }
+@keyframes stampin { 0% { opacity: 0; transform: scale(2.6) rotate(-32deg); } 55% { opacity: 1; transform: scale(.9) rotate(-10deg); } 100% { opacity: 1; transform: scale(1) rotate(-12deg); } }
+.v-signed .sub { color: var(--muted); font-size: 14.5px; max-width: 46ch; margin: 10px auto 0; }
+.cert { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; text-align: left; margin: 26px auto 0; max-width: 460px; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+.cert div { min-width: 0; }
+.cert dt { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.cert dd { margin: 2px 0 0; font-weight: 700; font-size: 14.5px; overflow-wrap: anywhere; }
+.cert .wide { grid-column: 1 / -1; }
+.cert .idrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cert .idrow code { font-family: var(--f-mono); font-size: 14px; color: var(--gold); }
+.copy { font-weight: 600; font-size: 12.5px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); padding: 5px 11px; border-radius: 8px; cursor: pointer; }
+.copy.ok { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.notice { margin-top: 16px; font-size: 13px; color: var(--muted); }
+.notice b { color: var(--gold); font-weight: 600; }
+.burst { position: absolute; left: 50%; top: 120px; width: 0; height: 0; pointer-events: none; }
+.burst i { position: absolute; width: 8px; height: 12px; border-radius: 2px; background: var(--c); opacity: 0; animation: fly 1.4s var(--d) cubic-bezier(.1, .7, .3, 1) forwards; }
+@keyframes fly { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); } }
+
+.v-error .errmark { width: 84px; height: 84px; margin: 0 auto 20px; border-radius: 50%; display: grid; place-items: center; font-size: 38px; font-weight: 800; color: var(--err); background: color-mix(in srgb, var(--err) 14%, transparent); border: 3px solid var(--err); font-family: var(--f-display); }
+.v-error .sub { color: var(--muted); font-size: 14.5px; max-width: 46ch; margin: 10px auto 0; }
+.v-error .acts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+
+footer { padding-block: 64px max(40px, env(safe-area-inset-bottom, 0px)); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+footer .mono { font-family: var(--f-mono); }
+
+@media (max-width: 920px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .reader { grid-template-columns: minmax(0, 1fr); }
+  .toc { position: static; display: flex; overflow-x: auto; padding: 8px; gap: 4px; scrollbar-width: thin; }
+  .toc li { flex: none; }
+  .toc button { width: auto; padding: 8px 10px; }
+  .toc .t { display: none; }
+  .toc button[aria-current="step"] .t { display: inline; }
+}
+@media (max-width: 560px) {
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+  .cert { grid-template-columns: minmax(0, 1fr); }
+  .rd-body { padding: 22px 18px 26px; }
+  .cl { grid-template-columns: 38px minmax(0, 1fr); }
+  .nav2 { width: 100%; }
+  .nav2 .btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .ticker-track, .submit::after, .docv::after, .hint .arr { animation: none; }
+  .sigzone path { animation: none; stroke-dashoffset: 0; }
+  .btn, .rd-prog i, .docv, .bar i { transition: none; }
+  .rd.thump, .rd[data-state="signed"] .stamp { animation: none; }
+  .rd[data-state="signing"] .sg-name { animation: none; clip-path: none; }
+  .rd[data-state="signing"] .pen { animation: none; }
+  .burst { display: none; }
+}
+</style>
+
+<div class="wrap" id="shell">
+  <header class="top">
+    <a class="logo" href="#top">Vegas<i>+</i><small>NDA</small></a>
+    <a class="btn primary btn-sm" href="#nda" id="to-nda">Читать NDA</a>
+  </header>
+
+  <main id="top" tabindex="-1">
+    <div class="hero">
+      <div>
+        <span class="eyebrow">Соглашение о неразглашении</span>
+        <h1><em>NDA</em> тестера Vegas+ | ARZ</h1>
+        <p class="lead">Перед закрытым бета-тестированием каждый участник читает и подписывает соглашение о неразглашении. Прочитайте шесть коротких страниц, затем введите данные на последней и подпишите документ онлайн.</p>
+        <div class="cta">
+          <a class="btn primary" href="#nda">Начать чтение</a>
+        </div>
+        <div class="chipline">
+          <span class="pill"><b>7</b> шагов</span>
+          <span class="pill">Чтение: <b>около 4 минут</b></span>
+          <span class="pill">Подпись: <b>онлайн</b></span>
+        </div>
+      </div>
+
+      <div class="docv" id="docv" aria-hidden="true">
+        <div class="docv-top">
+          <span class="docv-brand">Vegas<i>+</i> | ARZ</span>
+          <span class="docv-tag">NDA · v1.0</span>
+        </div>
+        <h2>Соглашение о неразглашении</h2>
+        <div class="lines"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="sigzone">
+          <small>Подпись тестера</small>
+          <svg viewBox="0 0 320 80"><path d="M6 52 C 18 20, 30 20, 34 46 S 52 78, 62 40 C 70 12, 82 12, 84 44 S 102 70, 112 38 L 128 46 C 150 20, 160 20, 150 50 S 190 66, 214 36 C 230 16, 244 28, 236 46 C 228 64, 262 60, 300 34"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track" id="ticker"></div>
+    </div>
+
+    <section id="nda">
+      <div class="sec-head">
+        <span class="tag">Документ</span>
+        <h2>Соглашение о неразглашении</h2>
+        <p>Прокрутите каждую страницу до конца, чтобы перейти к следующей. На последней странице вы введёте данные и подпишете NDA.</p>
+      </div>
+
+      <div class="reader">
+        <ol class="toc" id="toc" aria-label="Страницы документа"></ol>
+
+        <div class="rd" id="rd" data-state="read">
+          <!-- reading -->
+          <div class="rd-view v-read">
+            <div class="rd-head"><span id="rd-title"><b>NDA</b> · версия 1.0</span><span id="rd-count">Страница 1 из 7</span></div>
+            <div class="rd-prog"><i id="rd-prog"></i></div>
+            <div class="rd-body" id="rd-body">
+
+              <section class="pg" data-title="Общие положения">
+                <h3>1. Общие положения</h3>
+                <aside class="plain"><span>Простыми словами</span><p>Вы получаете доступ к закрытой версии продукта и обещаете не рассказывать о ней другим.</p></aside>
+                <div class="cl"><b>1.1</b><p>Настоящее соглашение о неразглашении (далее — «Соглашение») заключается между командой проекта Vegas+ | ARZ (далее — «Организатор») и физическим лицом, чьи данные указаны на последней странице (далее — «Тестер»).</p></div>
+                <div class="cl"><b>1.2</b><p>Соглашение относится к участию Тестера в закрытом бета-тестировании продуктов Vegas+ | ARZ (далее — «ЗБТ»).</p></div>
+                <div class="cl"><b>1.3</b><p>«Тестовая версия» — любая предварительная версия продукта, сборка, файл, скрипт, модификация или доступ, которые Организатор предоставляет Тестеру в рамках ЗБТ.</p></div>
+                <div class="cl"><b>1.4</b><p>«Конфиденциальная информация» — сведения, перечисленные на следующей странице.</p></div>
+                <div class="cl"><b>1.5</b><p>Соглашение вступает в силу в момент, когда Тестер подписывает его на последней странице, и действует в порядке, описанном ниже.</p></div>
+              </section>
+
+              <section class="pg" data-title="Что конфиденциально" hidden>
+                <h3>2. Конфиденциальная информация</h3>
+                <aside class="plain"><span>Простыми словами</span><p>Всё, что вы видите, получаете и узнаёте во время ЗБТ, остаётся внутри теста.</p></aside>
+                <div class="cl"><b>2.1</b><div><p>Конфиденциальной считается любая информация, связанная с ЗБТ, которую Тестер получил устно, письменно, в электронной или иной форме, в том числе:</p>
+                  <ul>
+                    <li>тестовые версии, файлы, сборки и установочные материалы;</li>
+                    <li>функции, интерфейс, механики и их описание;</li>
+                    <li>скриншоты, видео, трансляции и записи экрана Тестовой версии;</li>
+                    <li>исходный код, скрипты, настройки, ключи, пароли и данные доступа;</li>
+                    <li>планы развития, сроки выхода и внутренние обсуждения;</li>
+                    <li>баг-репорты, отзывы и переписка других тестеров;</li>
+                    <li>сведения об участниках ЗБТ.</li>
+                  </ul></div></div>
+                <div class="cl"><b>2.2</b><p>Конфиденциальной также считается информация, которую Организатор пометил как закрытую или которая по своему характеру явно не предназначена для публикации.</p></div>
+              </section>
+
+              <section class="pg" data-title="Обязанности тестера" hidden>
+                <h3>3. Обязанности Тестера</h3>
+                <aside class="plain"><span>Простыми словами</span><p>Не показывайте, не пересылайте и не публикуйте. Используйте Тестовую версию только для тестирования.</p></aside>
+                <div class="cl"><b>3.1</b><p>Тестер обязуется не разглашать Конфиденциальную информацию и не передавать её третьим лицам в любой форме.</p></div>
+                <div class="cl"><b>3.2</b><p>Тестер не публикует скриншоты, видео, записи и трансляции Тестовой версии и не обсуждает её в публичных чатах, на серверах, форумах и в социальных сетях без письменного разрешения Организатора.</p></div>
+                <div class="cl"><b>3.3</b><p>Тестер использует Тестовую версию только для тестирования и не использует её в иных целях, в том числе коммерческих.</p></div>
+                <div class="cl"><b>3.4</b><p>Тестер не копирует, не изменяет, не распространяет и не декомпилирует Тестовую версию и не пытается получить её исходный код, если это прямо не разрешено Организатором.</p></div>
+                <div class="cl"><b>3.5</b><p>Тестер хранит данные доступа в тайне, не передаёт свою учётную запись другим лицам и принимает разумные меры, чтобы доступ не попал к посторонним.</p></div>
+                <div class="cl"><b>3.6</b><p>Если Тестер узнал об утечке или о доступе посторонних к Тестовой версии, он сообщает об этом Организатору как можно скорее.</p></div>
+              </section>
+
+              <section class="pg" data-title="Права и отзывы" hidden>
+                <h3>4. Права Организатора и отзывы</h3>
+                <aside class="plain"><span>Простыми словами</span><p>Это бета, в ней возможны ошибки. Ваши отзывы можно использовать, чтобы улучшать продукт.</p></aside>
+                <div class="cl"><b>4.1</b><p>Тестовая версия предоставляется «как есть». Она может содержать ошибки, работать нестабильно и меняться без предупреждения. Организатор не гарантирует бесперебойную работу и в пределах, допускаемых законом, не отвечает за неудобства, связанные с ЗБТ.</p></div>
+                <div class="cl"><b>4.2</b><p>Организатор вправе в любой момент изменить условия ЗБТ, приостановить или прекратить доступ Тестера, в том числе при нарушении Соглашения или угрозе безопасности.</p></div>
+                <div class="cl"><b>4.3</b><p>Тестер передаёт отзывы, идеи и сообщения об ошибках через каналы, которые указывает Организатор. Организатор вправе использовать их для улучшения продуктов без дополнительного согласия Тестера и без вознаграждения.</p></div>
+                <div class="cl"><b>4.4</b><p>Участие в ЗБТ не даёт Тестеру прав на продукты Vegas+ | ARZ, их код, название и материалы. Все права остаются у Организатора и (или) правообладателей.</p></div>
+                <div class="cl"><b>4.5</b><p>Участие в ЗБТ не является трудовыми отношениями и не создаёт обязанности платить вознаграждение, если иное не согласовано отдельно в письменной форме.</p></div>
+              </section>
+
+              <section class="pg" data-title="Исключения и срок" hidden>
+                <h3>5. Исключения и срок</h3>
+                <aside class="plain"><span>Простыми словами</span><p>Не секрет то, что стало публичным не по вашей вине. После теста молчать нужно ещё какое-то время, а тестовые файлы надо удалить.</p></aside>
+                <div class="cl"><b>5.1</b><div><p>Обязательства по Соглашению не распространяются на информацию, которая:</p>
+                  <ul>
+                    <li>стала общедоступной не по вине Тестера;</li>
+                    <li>была известна Тестеру до получения от Организатора, и он может это подтвердить;</li>
+                    <li>получена Тестером на законных основаниях от третьего лица, не связанного обязанностью хранить её в тайне;</li>
+                    <li>разрешена к раскрытию Организатором письменно.</li>
+                  </ul></div></div>
+                <div class="cl"><b>5.2</b><p>Если закон или решение уполномоченного органа обязывает раскрыть Конфиденциальную информацию, Тестер раскрывает только необходимый минимум и, если это допустимо, заранее уведомляет Организатора.</p></div>
+                <div class="cl"><b>5.3</b><p>Соглашение действует с момента подписания и до окончания ЗБТ. Обязанность хранить Конфиденциальную информацию сохраняется ещё 3 года после даты подписания, а в отношении исходного кода, ключей и данных доступа — пока они остаются закрытыми.</p></div>
+                <div class="cl"><b>5.4</b><p>После окончания ЗБТ или по запросу Организатора Тестер удаляет Тестовую версию и связанные файлы и по просьбе Организатора подтверждает это. Обязанность не разглашать сохраняется и после удаления.</p></div>
+              </section>
+
+              <section class="pg" data-title="Ответственность" hidden>
+                <h3>6. Ответственность и прочее</h3>
+                <aside class="plain"><span>Простыми словами</span><p>За нарушение вас исключат из теста, возможна и ответственность по закону. Подпись ставится онлайн, а ваши данные нужны только для оформления.</p></aside>
+                <div class="cl"><b>6.1</b><p>При нарушении Соглашения Организатор вправе немедленно отозвать доступ Тестера и исключить его из ЗБТ.</p></div>
+                <div class="cl"><b>6.2</b><p>Организатор вправе требовать удаления опубликованных материалов, обращаться на платформы и к уполномоченным органам, а также требовать возмещения подтверждённого ущерба в порядке, предусмотренном применимым законодательством.</p></div>
+                <div class="cl"><b>6.3</b><p>Тестер подтверждает, что ему исполнилось 18 лет либо что он получил согласие родителей или иных законных представителей на участие в ЗБТ и подписание Соглашения.</p></div>
+                <div class="cl"><b>6.4</b><p>Данные, указанные при подписании (имя, фамилия, адрес электронной почты), используются только для оформления и подтверждения подписания Соглашения и связи с Тестером по вопросам ЗБТ. Они хранятся не дольше, чем нужно для этих целей.</p></div>
+                <div class="cl"><b>6.5</b><p>Ввод данных и нажатие кнопки «Подписать NDA» на последней странице означают подписание Соглашения в электронной форме. Тестер подтверждает, что прочитал все страницы, понял условия и подписывает Соглашение добровольно.</p></div>
+                <div class="cl"><b>6.6</b><p>Споры стороны сначала пытаются решить путём переговоров. Если договориться не удалось, применяется порядок, предусмотренный применимым законодательством.</p></div>
+                <div class="cl"><b>6.7</b><p>Версия документа: 1.0. Организатор вправе опубликовать новую версию, она применяется к тем, кто подписал именно её.</p></div>
+              </section>
+
+              <section class="pg" data-title="Подписание" hidden>
+                <h3>7. Подписание</h3>
+                <p class="sign-intro">Вы прочитали все страницы. Введите данные и подпишите NDA. Имя и фамилия появятся в поле подписи.</p>
+                <form id="form" novalidate>
+                  <div class="row2">
+                    <div class="fld" data-f="first">
+                      <label class="lb" for="f-first">Имя <i>*</i></label>
+                      <input id="f-first" name="first" type="text" maxlength="40" autocomplete="given-name" placeholder="Иван">
+                      <span class="msg">Укажите имя</span>
+                    </div>
+                    <div class="fld" data-f="last">
+                      <label class="lb" for="f-last">Фамилия <i>*</i></label>
+                      <input id="f-last" name="last" type="text" maxlength="40" autocomplete="family-name" placeholder="Иванов">
+                      <span class="msg">Укажите фамилию</span>
+                    </div>
+                  </div>
+                  <div class="fld" data-f="email">
+                    <label class="lb" for="f-email">Электронная почта <i>*</i></label>
+                    <input id="f-email" name="email" type="email" maxlength="80" autocomplete="email" inputmode="email" placeholder="name@example.com">
+                    <span class="msg">Укажите корректный адрес почты</span>
+                  </div>
+                  <div class="sigbox">
+                    <small>Подпись</small>
+                    <div class="sigtxt ph" id="sigtxt">Ваша подпись</div>
+                    <div class="sigmeta"><span id="sig-date">Дата: —</span><span>NDA · версия 1.0</span></div>
+                  </div>
+                  <div class="fld" data-f="read">
+                    <label class="chk"><input id="f-read" name="read" type="checkbox"><span>Я прочитал(а) все страницы NDA, понял(а) условия и принимаю их.</span></label>
+                    <span class="msg">Подтвердите, что прочитали NDA</span>
+                  </div>
+                  <div class="fld" data-f="data">
+                    <label class="chk"><input id="f-data" name="data" type="checkbox"><span>Я согласен(на) на использование указанных данных для оформления подписания и связи по вопросам ЗБТ.</span></label>
+                    <span class="msg">Нужно согласие на использование данных</span>
+                  </div>
+                  <div class="hp" aria-hidden="true"><label for="f-site">Сайт</label><input id="f-site" name="site" type="text" tabindex="-1" autocomplete="off"></div>
+                  <div class="demo" id="demo"><span>◆</span>Демо-режим: данные никуда не отправляются</div>
+                  <button class="btn primary submit" type="submit">Подписать NDA</button>
+                  <p class="fine">Нажимая кнопку, вы подписываете соглашение в электронной форме.</p>
+                </form>
+              </section>
+
+            </div>
+            <div class="rd-foot" id="rd-foot">
+              <div class="hint" id="hint"><span class="arr" id="hint-ic">↓</span><span id="hint-tx">Прокрутите страницу до конца, чтобы продолжить</span></div>
+              <div class="nav2">
+                <button class="btn" type="button" id="prev">Назад</button>
+                <button class="btn primary" type="button" id="next" disabled>Далее</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- signing -->
+          <div class="rd-view v-signing" aria-live="polite">
+            <div class="sg-card">
+              <small>Подпись тестера</small>
+              <div class="pen" aria-hidden="true"></div>
+              <div class="sg-name" id="sg-name">Имя Фамилия</div>
+              <svg class="sg-line" viewBox="0 0 400 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2 8 C 80 2, 160 12, 240 6 S 360 4, 398 8"/></svg>
+            </div>
+            <h2>Подписываем NDA</h2>
+            <div class="bar" id="bar"><i></i></div>
+            <ul class="steplist" id="steps">
+              <li>Проверяем данные</li>
+              <li>Формируем документ</li>
+              <li>Фиксируем подпись</li>
+            </ul>
+          </div>
+
+          <!-- signed -->
+          <div class="rd-view v-signed" aria-live="polite">
+            <div class="burst" id="burst" aria-hidden="true"></div>
+            <div class="stamp" aria-hidden="true"><b>NDA</b><span>подписана</span><small id="stamp-date"></small></div>
+            <h2>NDA подписана</h2>
+            <p class="sub">Спасибо! Соглашение о неразглашении Vegas+ | ARZ подписано. Сохраните номер соглашения: он подтверждает вашу подпись.</p>
+            <dl class="cert">
+              <div><dt>Подписант</dt><dd id="c-name">—</dd></div>
+              <div><dt>Эл. почта</dt><dd id="c-mail">—</dd></div>
+              <div><dt>Дата подписания</dt><dd id="c-date">—</dd></div>
+              <div><dt>Версия</dt><dd>NDA 1.0</dd></div>
+              <div class="wide"><dt>Номер соглашения</dt><dd class="idrow"><code id="c-id">—</code><button class="copy" type="button" id="copy-id">Копировать</button></dd></div>
+            </dl>
+            <p class="notice" id="c-note"></p>
+          </div>
+
+          <!-- error -->
+          <div class="rd-view v-error" aria-live="polite">
+            <div class="errmark" aria-hidden="true">!</div>
+            <h2>Подпись не отправлена</h2>
+            <p class="sub" id="err-text">Не удалось связаться с сервером. Попробуйте ещё раз чуть позже.</p>
+            <div class="acts"><button class="btn primary" type="button" id="retry">Вернуться к подписанию</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© <span id="year"></span> Vegas+ | ARZ</span>
+    <span class="mono">NDA · версия 1.0</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // ---------- настройки ----------
+  var WEBHOOK_URL = "https://discord.com/api/webhooks/1401558296942608485/ecFzQM7Tg2HzMd1MG-WMtGiEgsc9lWVtHV3VsLq-QWNsQlYo4FrOTB_XQanNufdvZO6k";
+  var NDA_VERSION = "1.0";
+  var STACK = ["NDA", "Vegas+", "ARZ", "ЗБТ", "Конфиденциально", "Подпись онлайн", "Тестеры"];
+  var MIN_SIGNING_MS = 3200;
+
+  var root = document.documentElement;
+  var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function hex(n) { var s = ""; while (s.length < n) s += Math.floor(Math.random() * 16).toString(16); return s.toUpperCase(); }
+  function $(id) { return document.getElementById(id); }
+
+  // ---------- декор ----------
+  var th = "";
+  for (var r = 0; r < 4; r++) STACK.forEach(function (s) { th += "<span>" + s + "</span>"; });
+  $("ticker").innerHTML = th;
+  $("year").textContent = new Date().getFullYear();
+
+  var docv = $("docv");
+  if (docv && !calm && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+    docv.addEventListener("pointermove", function (e) {
+      var b = docv.getBoundingClientRect();
+      var x = (e.clientX - b.left) / b.width - 0.5;
+      var y = (e.clientY - b.top) / b.height - 0.5;
+      docv.style.setProperty("--ry", (x * 10).toFixed(2) + "deg");
+      docv.style.setProperty("--rx", (-y * 10).toFixed(2) + "deg");
+    });
+    docv.addEventListener("pointerleave", function () {
+      docv.style.setProperty("--ry", "0deg");
+      docv.style.setProperty("--rx", "0deg");
+    });
+  }
+
+  // ---------- читалка ----------
+  var rd = $("rd");
+  var body = $("rd-body");
+  var pages = Array.prototype.slice.call(body.querySelectorAll(".pg"));
+  var total = pages.length;
+  var last = total - 1;
+  var cur = 0;
+  var readOk = pages.map(function () { return false; });
+  var maxOpen = 0;
+  var toc = $("toc");
+  var btnPrev = $("prev"), btnNext = $("next");
+  var hint = $("hint"), hintIc = $("hint-ic"), hintTx = $("hint-tx");
+
+  pages.forEach(function (p, i) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t">' + p.getAttribute("data-title") + "</span>";
+    b.addEventListener("click", function () { if (i <= maxOpen) go(i, true); });
+    li.appendChild(b);
+    toc.appendChild(li);
+  });
+  var tocBtns = Array.prototype.slice.call(toc.querySelectorAll("button"));
+
+  function paintToc() {
+    tocBtns.forEach(function (b, i) {
+      var n = b.firstElementChild;
+      b.disabled = i > maxOpen;
+      if (i === cur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+      var done = readOk[i] && i !== last || (signedOk && i === last);
+      b.classList.toggle("done", !!done);
+      n.textContent = done ? "✓" : String(i + 1);
+    });
+  }
+
+  function paintHint() {
+    if (cur === last) {
+      hint.classList.remove("ok");
+      hintIc.textContent = "✎";
+      hintTx.textContent = "Введите данные и нажмите «Подписать NDA»";
+      return;
+    }
+    if (readOk[cur]) {
+      hint.classList.add("ok");
+      hintIc.textContent = "✓";
+      hintTx.textContent = "Страница прочитана, можно переходить дальше";
+    } else {
+      hint.classList.remove("ok");
+      hintIc.textContent = "↓";
+      hintTx.textContent = "Прокрутите страницу до конца, чтобы продолжить";
+    }
+  }
+
+  function paintNav() {
+    btnPrev.disabled = cur === 0;
+    btnNext.style.display = cur === last ? "none" : "";
+    btnNext.disabled = !readOk[cur];
+    paintHint();
+    paintToc();
+  }
+
+  function markRead() {
+    if (cur === last || readOk[cur]) return;
+    readOk[cur] = true;
+    if (maxOpen < cur + 1) maxOpen = cur + 1;
+    paintNav();
+  }
+
+  function checkScroll() {
+    if (cur === last) return;
+    var left = body.scrollHeight - body.clientHeight - body.scrollTop;
+    if (left <= 10) markRead();
+  }
+  body.addEventListener("scroll", checkScroll, { passive: true });
+  window.addEventListener("resize", function () { setTimeout(checkScroll, 60); });
+
+  function go(i, user) {
+    cur = i;
+    pages.forEach(function (p, k) { p.hidden = k !== i; });
+    body.classList.toggle("free", i === last);
+    body.scrollTop = 0;
+    $("rd-count").textContent = "Страница " + (i + 1) + " из " + total;
+    $("rd-prog").style.width = Math.round(((i + 1) / total) * 100) + "%";
+    paintNav();
+    requestAnimationFrame(function () {
+      checkScroll();
+      if (i === last) updSig();
+    });
+    if (user) {
+      var top = rd.getBoundingClientRect().top;
+      if (top < 0 || top > window.innerHeight * 0.4) rd.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+    }
+  }
+  btnNext.addEventListener("click", function () { if (readOk[cur] && cur < last) go(cur + 1, true); });
+  btnPrev.addEventListener("click", function () { if (cur > 0) go(cur - 1, true); });
+
+  // ---------- подпись ----------
+  var form = $("form");
+  var signedOk = false;
+  var busy = false;
+  var firstEl = $("f-first"), lastEl = $("f-last"), mailEl = $("f-email");
+
+  function nowText() {
+    var d = new Date();
+    try { return d.toLocaleString("ru-RU", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+    catch (e) { return d.toISOString().slice(0, 16).replace("T", " "); }
+  }
+  function updSig() {
+    var name = (firstEl.value.trim() + " " + lastEl.value.trim()).trim();
+    var s = $("sigtxt");
+    s.textContent = name || "Ваша подпись";
+    s.classList.toggle("ph", !name);
+    $("sig-date").textContent = "Дата: " + nowText();
+  }
+  firstEl.addEventListener("input", updSig);
+  lastEl.addEventListener("input", updSig);
+
+  function isDemo() { return location.hash === "#demo"; }
+  function paintDemo() { $("demo").classList.toggle("on", isDemo()); }
+  window.addEventListener("hashchange", paintDemo);
+  paintDemo();
+
+  function clearErrors() { Array.prototype.forEach.call(form.querySelectorAll(".fld.bad"), function (f) { f.classList.remove("bad"); }); }
+  Array.prototype.forEach.call(form.querySelectorAll("input"), function (el) {
+    var ev = el.type === "checkbox" ? "change" : "input";
+    el.addEventListener(ev, function () { var p = el.closest(".fld"); if (p) p.classList.remove("bad"); });
+  });
+
+  function validate() {
+    clearErrors();
+    var bad = [];
+    if (firstEl.value.trim().length < 2) bad.push("first");
+    if (lastEl.value.trim().length < 2) bad.push("last");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mailEl.value.trim())) bad.push("email");
+    if (!$("f-read").checked) bad.push("read");
+    if (!$("f-data").checked) bad.push("data");
+    bad.forEach(function (k) { form.querySelector('.fld[data-f="' + k + '"]').classList.add("bad"); });
+    if (bad.length) {
+      var f = form.querySelector('.fld[data-f="' + bad[0] + '"] input');
+      if (f) f.focus();
+    }
+    return bad.length === 0;
+  }
+
+  function cut(s, n) { s = String(s || "").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+
+  function payload(rec) {
+    return {
+      username: "Vegas+ | NDA",
+      content: "NDA подписана · " + rec.id + " · " + cut(rec.first + " " + rec.last, 100),
+      allowed_mentions: { parse: [] },
+      embeds: [{
+        title: "NDA подписана",
+        color: 0x4ee3a0,
+        fields: [
+          { name: "Имя", value: cut(rec.first, 80) || "—", inline: true },
+          { name: "Фамилия", value: cut(rec.last, 80) || "—", inline: true },
+          { name: "Эл. почта", value: cut(rec.email, 160) || "—", inline: false },
+          { name: "Номер соглашения", value: rec.id, inline: true },
+          { name: "Версия NDA", value: NDA_VERSION, inline: true },
+          { name: "Дата подписания", value: rec.date, inline: false }
+        ],
+        footer: { text: "Vegas+ | ARZ · NDA" },
+        timestamp: new Date().toISOString()
+      }]
+    };
+  }
+
+  function post(rec) {
+    var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 15000);
+    return fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload(rec)),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (res) {
+      clearTimeout(timer);
+      if (!res.ok) { var e = new Error("http " + res.status); e.status = res.status; throw e; }
+      return true;
+    }, function (err) { clearTimeout(timer); throw err; });
+  }
+
+  function confetti() {
+    var b = $("burst");
+    b.innerHTML = "";
+    var colors = ["var(--accent)", "var(--gold)", "var(--ok)", "var(--fg)"];
+    for (var i = 0; i < 40; i++) {
+      var p = document.createElement("i");
+      var ang = Math.random() * Math.PI * 2;
+      var dist = 100 + Math.random() * 170;
+      p.style.setProperty("--x", Math.cos(ang) * dist + "px");
+      p.style.setProperty("--y", Math.sin(ang) * dist * 0.8 - 30 + "px");
+      p.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+      p.style.setProperty("--d", (0.35 + Math.random() * 0.2) + "s");
+      p.style.setProperty("--c", colors[i % colors.length]);
+      b.appendChild(p);
+    }
+  }
+
+  function setState(s) { rd.setAttribute("data-state", s); }
+  var stepItems = Array.prototype.slice.call(document.querySelectorAll("#steps li"));
+  var bar = $("bar");
+
+  $("retry").addEventListener("click", function () { setState("read"); });
+
+  $("copy-id").addEventListener("click", function () {
+    var btn = $("copy-id"), val = $("c-id").textContent;
+    function done() { btn.textContent = "Скопировано"; btn.classList.add("ok"); setTimeout(function () { btn.textContent = "Копировать"; btn.classList.remove("ok"); }, 1600); }
+    function fb() { var rg = document.createRange(); rg.selectNodeContents($("c-id")); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rg); }
+    try { navigator.clipboard.writeText(val).then(done, fb); } catch (e) { fb(); }
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (busy) return;
+    if (form.site.value) return; // ловушка для ботов
+    if (!validate()) return;
+
+    var rec = {
+      first: firstEl.value.trim(),
+      last: lastEl.value.trim(),
+      email: mailEl.value.trim(),
+      id: "VP-NDA-" + hex(6),
+      date: nowText()
+    };
+    var demo = isDemo();
+
+    busy = true;
+    $("sg-name").textContent = rec.first + " " + rec.last;
+    setState("signing");
+    bar.classList.remove("full");
+    bar.firstElementChild.style.width = "0";
+    stepItems.forEach(function (li) { li.className = ""; });
+    stepItems[0].className = "on";
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bar.firstElementChild.style.width = "88%"; }); });
+    rd.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+
+    var t1 = setTimeout(function () { stepItems[0].className = "ok"; stepItems[1].className = "on"; }, 900);
+    var t2 = setTimeout(function () { stepItems[1].className = "ok"; stepItems[2].className = "on"; }, 2000);
+
+    var started = Date.now();
+    var result = (demo ? sleep(400) : post(rec)).then(function () { return { ok: true }; }, function (err) { return { ok: false, err: err }; });
+
+    result.then(function (r) {
+      return sleep(Math.max(0, MIN_SIGNING_MS - (Date.now() - started))).then(function () { return r; });
+    }).then(function (r) {
+      clearTimeout(t1); clearTimeout(t2);
+      busy = false;
+      if (r.ok) {
+        stepItems.forEach(function (li) { li.className = "ok"; });
+        bar.classList.add("full");
+        signedOk = true;
+        return sleep(450).then(function () {
+          $("c-name").textContent = rec.first + " " + rec.last;
+          $("c-mail").textContent = rec.email;
+          $("c-date").textContent = rec.date;
+          $("c-id").textContent = rec.id;
+          $("stamp-date").textContent = rec.date;
+          $("c-note").innerHTML = demo
+            ? "<b>Демо-режим:</b> данные не отправлялись."
+            : "Копия подписания передана команде Vegas+ | ARZ.";
+          setState("signed");
+          paintToc();
+          rd.classList.remove("thump"); void rd.offsetWidth; rd.classList.add("thump");
+          confetti();
+        });
+      }
+      var st = r.err && r.err.status;
+      var msg;
+      if (st === 429) msg = "Слишком много запросов. Подождите минуту и попробуйте снова.";
+      else if (st) msg = "Сервер вернул ошибку (" + st + "). Повторите позже.";
+      else msg = "Не удалось связаться с сервером. Проверьте соединение и повторите.";
+      $("err-text").textContent = msg;
+      setState("error");
+    });
+  });
+
+  go(0, false);
+})();
+</script>
